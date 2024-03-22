@@ -1,10 +1,13 @@
 from creds import USERNAME,PASSOWRD
-from selenium import webdriver
+from selenium import Service
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import *
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.options import Options
-from functions import updateCookieFromSelenium, getTokens
+
+from seleniumwire import webdriver
+from seleniumwire import *
+from functions import *
 import time
 import requests
 import re
@@ -13,8 +16,7 @@ import json
 
 chrome_options = Options()
 chrome_options.add_argument("--ignore-certificate-errors")
-
-driver = webdriver.Chrome(options=chrome_options)
+driver = webdriver.Chrome()
 
 
 driver.get("https://chick-fil-a.compliancemetrix.com/rql/p/acfareportsallreportsvtopissuesactivator")
@@ -43,29 +45,19 @@ wait = WebDriverWait(driver, 10)
 table = wait.until(EC.presence_of_element_located((By.CSS_SELECTOR, 'table')))
 rows = table.find_elements(By.TAG_NAME, 'tr')
 
-#-------DATA VAR FOR STORING RESPONSE-------#
-session = requests.Session()
-xhr_url = "https://chick-fil-a.compliancemetrix.com/rql/execute"
+
 
 #-------LOOP THROUGH TABLE AND CLICK ON VIEW-------#
 for i in range(len(rows)-1):
     row = wait.until(EC.presence_of_all_elements_located((By.CSS_SELECTOR, 'table tbody tr')))[i]
     view_link = row.find_element(By.CSS_SELECTOR, 'a')
+    #--Listen on the network--#
+    
     driver.execute_script("arguments[0].click();", view_link)
     time.sleep(3)
-#-------GET TOKENS AND SEND XHR REQUEST-------#
-    updateCookieFromSelenium(driver, session)
-    headers, data = getTokens(driver)
-    response = session.post(xhr_url, headers=headers, json=data)
-    if response.status_code == 200:
-        data = response.json()
-        print(data)
-    else:
-        print("Failed to retrieve data via XHR replication", response.status_code, response.text)
+    
 
 
-    #PROBLEM
-    #If we use the loop to click on view and retrieve the finding for the question, then it will leave the current DOM probbaly  fuckin up everything. Making the loop kinda useless.
 
 
 
